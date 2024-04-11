@@ -20,7 +20,7 @@ jobs:
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
       KERNEL_DEFCONFIG: "ysl_defconfig"
-      KERNEL_CMDLINE: "ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- AS=aarch64-linux-gnu-as O=out"
+      KERNEL_CMDLINE: "ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- LLVM=1 O=out"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -36,7 +36,7 @@ jobs:
         sudo apt-get update -y 
         sudo apt install gcc-aarch64-linux-gnu -y
         sudo apt install gcc-arm-linux-gnueabi -y
-        sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
+        sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils llvm-13 mkbootimg cpio device-tree-compiler git git-lfs -y
         git clone https://github.com/kdrag0n/proton-clang --dept=1 -b master
         git clone https://github.com/Coconutat/AnyKernel3_Backup -b Op6_KSU --depth=1
         rm -rf AnyKernel3/.git
