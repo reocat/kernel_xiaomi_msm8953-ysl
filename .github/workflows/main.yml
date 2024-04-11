@@ -1,4 +1,4 @@
-name: Build OnePlus 6 and 6t KernelSU Kernel
+name: Build KernelSU Kernel
 on:
   workflow_dispatch:
   schedule:
