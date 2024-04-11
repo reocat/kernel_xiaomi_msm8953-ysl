@@ -1,4 +1,4 @@
-name: Build Kernel
+name: Build OnePlus 6 and 6t KernelSU Kernel
 on:
   workflow_dispatch:
   schedule:
@@ -19,11 +19,11 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
-      KERNEL_DEFCONFIG: "ysl_defconfig"
+      KERNEL_DEFCONFIG: "radioactive_ksu_defconfig"
       KERNEL_CMDLINE: "ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- O=out"
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         submodules: 'true'
         fetch-depth: 100
@@ -37,28 +37,25 @@ jobs:
         sudo apt install gcc-aarch64-linux-gnu -y
         sudo apt install gcc-arm-linux-gnueabi -y
         sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-        wget $(curl -fsSL https://raw.githubusercontent.com/ZyCromerZ/Clang/main/Clang-14-link.txt)
-        mkdir zyc-clang
-        tar -xzvf Clang-*.tar.gz -C zyc-clang
-        git clone https://github.com/osm0sis/AnyKernel3
-        sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
-        sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
-        sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
-        rm -rf AnyKernel3/.git* AnyKernel3/README.md
-        
+        git clone https://github.com/kdrag0n/proton-clang --dept=1 -b master
+        git clone https://github.com/Coconutat/AnyKernel3_Backup -b Op6_KSU --depth=1
+        rm -rf AnyKernel3/.git
+    
     - name: GetTime
       id: get_time
       run: |
-        echo "TIME=$(TZ=UTC+3 date +%s )" >> $GITHUB_OUTPUT
+        echo "TIME=$(TZ=UTC+3 date +%m%d%H%M )" >> $GITHUB_OUTPUT
+
     - name: Build Kernel-With-KernelSU
       run: |
-        export PATH=$(pwd)/zyc-clang/bin/:$PATH
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+        export PATH=$(pwd)/proton-clang/bin/:$PATH
         make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
         make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
-        cp out/arch/arm64/boot/Image-dtb AnyKernel3
+        cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3_Backup
+
     - name: Upload Kernel-SU
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
-        name: KSU-${{ steps.get_time.outputs.TIME }}
-        path: "AnyKernel3/*"
+        name: Radioactive_kernel_op6-KSU-${{ steps.get_time.outputs.TIME }}
+        path: "AnyKernel3_Backup/*"
